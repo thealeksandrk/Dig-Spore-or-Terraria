@@ -20,15 +20,19 @@ var gravity = 120
 var SPEED : int = 100
 var max_speed:int = 400
 var velocity = Vector2()
+var rotation_speed=1.5
+var distance_to_player 
+var direction=0
 
 const FLEE_DISTANCE = 2500
 const CHASE_DISTANCE = 3000
 const BITE_DISTANCE = 50
 var last_bite_time = 0
 
+const Pi=3.14159265
+
 onready var player = get_node("/root/Cell_time/Cell_player")
-var distance_to_player 
-var direction
+
 
 var specs : Array = []
 var special_spec
@@ -50,7 +54,7 @@ func _physics_process(delta):
 			
 			
 		else:
-			velocity = Vector2()
+			self.velocity = Vector2()
 		if distance_to_player < BITE_DISTANCE and can_bite():
 			bite(distance_to_player)
 			
@@ -60,13 +64,21 @@ func _physics_process(delta):
 			player.energy=player.max_energy
 			if self.max_hp*1.5>player.max_hp :
 				player.max_hp+=self.max_hp/10
-	velocity.y+=gravity*delta
-	move_and_slide(velocity)
+				
+
+		self.rotation = lerp_angle(self.rotation, self.direction-Pi/2, delta * self.rotation_speed)
+		self.velocity = Vector2(self.SPEED, 0).rotated(self.rotation-Pi/2)
+		
+	else : self.rotation += self.direction * delta
+	
+	self.velocity.y+=gravity*delta
+	self.velocity = move_and_slide(self.velocity)
+
 	
 	if (self.velocity.x>-40 and self.velocity.x<40) and (self.velocity.y>-40 and self.velocity.y<40):
 		self.energy+=2
 	elif (self.velocity.x<-90 or self.velocity.x>90) or (self.velocity.y<-90 or self.velocity.y>90):
-		self.energy-=self.SPEED*0.01*400/self.max_speed
+		self.energy-=self.SPEED*0.007*400/self.max_speed
 	
 	if self.energy<10:
 		self.SPEED-=self.SPEED*0.1
@@ -116,13 +128,15 @@ func update_bars():
 
 func flee():
 	# Убегание от игрока
-	direction = (position - player.position).normalized()
-	velocity = direction * SPEED
+	self.direction = player.position - self.position
+	self.direction=atan2(self.direction.y, self.direction.x)
 
 func chase():
 	# Преследование игрока
-	var direction = (player.position - position).normalized()
-	velocity = direction * SPEED
+	self.direction =  self.position - player.position
+	self.direction=atan2(self.direction.y, self.direction.x)
+
+
 
 func bite(distance_to_player):
 	if distance_to_player < BITE_DISTANCE/1.2: # проверяем, достаточно ли близко враг

@@ -1,6 +1,6 @@
 extends Node2D
 
-const MAX_ENEMIES = 20 # максимальное количество противников
+const MAX_ENEMIES = 10 # максимальное количество противников
 const ENEMY_SCENE_PATH = ["res://1_Cell/Scenes/Cell_Enemy_herbivor_0.tscn", 
 "res://1_Cell/Scenes/Cell_Enemy_predator_0.tscn"] # путь к файлу сцены противника
 
